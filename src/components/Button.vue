@@ -1,5 +1,5 @@
 <template>
-  <button class="btn" @click="addTask" :style="{background: color}">
+  <button class="btn" @click="$emit('toggle-add-task')" :style="{background: color}">
       {{title}}
   </button>
 </template>
@@ -9,9 +9,6 @@ export default {
     name: 'Button',
     props: ['title','color'],
     methods: {
-        addTask() {
-            console.log("Clicked");
-        }
     }
 }
 </script>

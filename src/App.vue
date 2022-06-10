@@ -1,11 +1,11 @@
 <template>
 <div class="container">
-<Header title="Task Tracker" />
-<AddTask @add-new-task="addTask"/>
-<Tasks @delete-task="deleteTask" :tasks="tasks" />
+<Header @toggle-add-task="toggleAddTask" title="Task Tracker" :showAddTask="showAddTask"/>
+<AddTask v-show="showAddTask" @add-new-task="addTask"/>
+<Tasks @toggle-reminder="toggleReminder" @delete-task="deleteTask" :tasks="tasks" />
 </div>
 </template>
-
+x
 <script>
 import Header from './components/Header.vue'
 import Tasks from './components/TasksList.vue' 
@@ -20,39 +20,50 @@ export default {
 data() {
   return {
     tasks: [],
-
+    showAddTask: false
   }
 },
 methods: {
-  addTask(newTask) {
-    this.tasks = [...this.tasks, newTask]
+  async fetchTasks() {
+    const res = await fetch("http://localhost:5000/tasks");
+    const data = await res.json();
+    return data;
   },
-  deleteTask(id) {
-    if(confirm("Are you sure you wanna delete the task?"))
-    this.tasks = this.tasks.filter(task => task.id !== id)
+  async fetchTaskById(id) {
+    const res = await fetch(`http://localhost:5000/tasks/${id}`);
+    const data = await res.json();
+    return data;
+  },
+  async addTask(newTask) {
+  const res = await fetch("http://localhost:5000/tasks",{
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify(newTask)
+  });
+  const data = await res.json();
+    this.tasks = [...this.tasks, data]
+  },
+  toggleReminder(id) {
+    const taskToToggle = await this.fetchTaskById(id);
+    this.tasks = this.tasks.map(task => 
+    task.id === taskToBeToggled.id ? {...task, reminder: !taskToBeToggled.reminder }: task
+    )
+  },
+  async deleteTask(id) {
+    if(confirm("Are you sure you wanna delete the task?")) {
+      const res = await fetch(`http://localhost:5000/tasks/${id}`,{
+      method:'DELETE'
+    })
+    res.status === 200 ? (this.tasks = this.tasks.filter(task => task.id !== id)) : 
+    alert("Error while deleting the task")
+    }
+  },
+  toggleAddTask(){
+    this.showAddTask = !this.showAddTask
   }
 },
-created() {
-  this.tasks = [   
-    {
-      "id": "1",
-      "text": "Doctors Appointment",
-      "day": "March 5th at 2:30pm",
-      "reminder": true
-    },
-    {
-      "id": "2",
-      "text": "Meeting with boss",
-      "day": "March 6th at 1:30pm",
-      "reminder": true
-    },
-    {
-      "id": "3",
-      "text": "Food shopping",
-      "day": "March 7th at 2:00pm",
-      "reminder": false
-    }
-  ]
+async created() {
+  this.tasks = await this.fetchTasks();
 }
 }
 </script>
