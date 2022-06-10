@@ -1,5 +1,5 @@
 # task-tracker
-
+> This is a Vue.js basic concepts practice project which tracks tasks and set reminders.
 ## Project setup
 ```
 npm install
